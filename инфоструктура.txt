@@ -1,0 +1,88 @@
+этап 1: ядро и инфраструктура (1-2 недели)
+без этого нельзя двигаться дальше:
+
+менеджер модулей (загрузка/выгрузка модулей на лету)
+
+система конфигурации (json/yaml конфиги)
+
+логгирование (подробные логи для отладки)
+
+обработка ошибок и исключений
+
+система плагинов (hot reload модулей)
+
+самое важное: единый интерфейс командной строки (argparse или click)
+
+этап 2: информационная разведка (osint) (2-3 недели)
+самое востребованное в пентесте:
+
+whois lookup (python-whois)
+
+dns enumeration (dnspython)
+
+subdomain brute force (async requests)
+
+порт-сканер асинхронный (asyncio + socket)
+
+определение сервисов по баннерам
+
+сбор информации с соцсетей и публичных источников
+
+wayback_machine скрейпер
+
+этап 3: веб-пентест (3-4 недели)
+80% работы — это веб:
+
+spider/crawler (scrapy или свой на aiohttp)
+
+xss scanner (проверка форм и параметров)
+
+sql injection detector (sqli patterns + time-based)
+
+directory/file brute force (работа с wordlists)
+
+headers security checker
+
+cms/detection (определение технологий)
+
+csrf/clickjacking tester
+
+этап 4: крипто и сети (2-3 недели)
+password cracker (поддержка hashcat-like алгоритмов)
+
+ssl/tls scanner (проверка сертификатов, слабых шифров)
+
+network sniffer (scapy для сниффинга)
+
+arp spoofing detector
+
+pcap analyzer (чтение .pcap файлов)
+
+этап 5: эксплуатация и пост-эксплуатация (3-4 недели)
+reverse shell manager (мультиклиент)
+
+keylogger (по желанию, осторожно!)
+
+privilege escalation checker (сбор информации о системе)
+
+persistence methods (методы закрепления в системе)
+
+lateral movement tools
+
+этап 6: автоматизация и удобство (1-2 недели)
+генератор отчетов (html/pdf/markdown)
+
+dashboard/web интерфейс (flask/fastapi, опционально)
+
+workflow automation (сценарии атак)
+
+интеграция с популярными API (shodan, virustotal и т.д.)
+
+этап 7: уникальные фичи и оптимизация
+ai-assisted scanning (использование ML для анализа)
+
+attack simulation (автоматические сценарии атак)
+
+deception detection (обнаружение ловушек/honeypots)
+
+stealth mode (скрытные проверки)

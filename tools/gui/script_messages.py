@@ -1,11 +1,11 @@
-# tools/script_messages.py
 import json
 import random
 import os
 
 current_dir = os.path.dirname(__file__)
-parent_dir = os.path.dirname(current_dir)
-json_path = os.path.join(parent_dir, "backend", "words.json")
+tools_dir = os.path.dirname(current_dir)
+project_root = os.path.dirname(tools_dir)
+json_path = os.path.join(project_root, "backend", "words.json")
 
 with open(json_path, 'r') as f:
     words_data = json.load(f)

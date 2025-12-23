@@ -1,10 +1,11 @@
-from tools import script_messages
+from tools.gui import script_messages
 import simple_term_menu
 import art
 import json
 import random
 import time
 import sys
+from tools.osint import whois_lookup, dns_enumeration, subdomain_bruteforce
 
 with open('backend/cookies.json', 'r') as cookies:
     cookie = json.load(cookies)
@@ -38,6 +39,7 @@ while True:
     menu = simple_term_menu.TerminalMenu(
         ["модули", "логи", "генератор отчетов", "выход"],
         menu_cursor="-> ",
+        menu_cursor_style=("fg_gray", "bold"),
         clear_screen=False
     ).show()
     
@@ -48,11 +50,45 @@ while True:
         modules_menu = simple_term_menu.TerminalMenu(
             ["osint", "веб-пентест", "крипто и сети", "эксплуатация", "назад"],
             menu_cursor="-> ",
+            menu_cursor_style=("fg_gray", "bold"),
             clear_screen=False
         ).show()
-        if modules_menu == 0 or modules_menu == 1 or modules_menu == 2 or modules_menu == 3:
-            print("еще в разработке")
-            input("")
+        if modules_menu == 0:
+            osint_menu = simple_term_menu.TerminalMenu(
+                ["whois lookup", "dns enumeration", "brute force(subdomain)", "port-scaner", "определение сервиса по баннеру", "сбор информации", "wayback-machine(скрейпер)"],
+                menu_cursor="-> ",
+                menu_cursor_style=("fg_gray", "bold"),
+                clear_screen=False
+            ).show()
+            if osint_menu == 0:
+                osint_domen_whois = input("домен сайта(без https://) -> ")
+                print(whois_lookup.whois_lookup(osint_domen_whois))
+                input("")
+            if osint_menu == 2:
+                osint_domen_brute = input("домен сайта(без https://) -> ")
+                try:
+                    results = subdomain_bruteforce.run_bruteforce(osint_domen_brute)
+                    
+                    save = input("сохранить результаты в файл? (y/n) -> ").lower()
+                    if save == 'y':
+                        import json
+                        from datetime import datetime
+                        
+                        filename = f"results/subdomains_{osint_domen_brute}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+                        data = {
+                            "domain": osint_domen_brute,
+                            "timestamp": datetime.now().isoformat(),
+                            "results": [list(r) for r in results]
+                        }
+                        
+                        with open(filename, 'w', encoding='utf-8') as f:
+                            json.dump(data, f, indent=4, ensure_ascii=False)
+                        print(f"результаты сохранены в {filename}")
+                except ImportError:
+                    print("модуль subdomain_bruteforce не найден")
+                except Exception as e:
+                    print(f"ошибка: {e}")
+                input("")
         if modules_menu == 4:
             continue
     
