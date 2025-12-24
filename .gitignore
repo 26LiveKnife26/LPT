@@ -1,4 +1,4 @@
-# Python
+
 __pycache__/
 *.py[cod]
 *$py.class
@@ -20,22 +20,18 @@ wheels/
 .installed.cfg
 *.egg
 
-# Virtual Environment
 venv/
 env/
 ENV/
 
-# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# Системные
 .DS_Store
 Thumbs.db
 
-# Твои файлы
 *.log
 инфоструктура.txt

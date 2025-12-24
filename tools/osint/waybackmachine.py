@@ -212,14 +212,128 @@ class wayback_scraper:
         
         return analysis[:10]
     
-    def run(self):
+    def print_results(self, snapshots, interesting, sample_content, robots, analysis):
+        print(f"\n{'='*70}")
+        print(f"📜 отчет wayback machine для {self.domain}")
+        print(f"{'='*70}")
+        
+        print(f"\n📊 общая информация:")
+        print(f"   всего снимков: {len(snapshots)}")
+        print(f"   дата анализа: {datetime.now().strftime('%d.%m.%Y %H:%M')}")
+        
+        print(f"\n{'='*70}")
+        print(f"🔍 найденные интересные пути:")
+        
+        found_any = False
+        for cat, items in interesting.items():
+            if items:
+                found_any = True
+                print(f"\n   📁 {cat} ({len(items)}):")
+                for i, item in enumerate(items[:3], 1):
+                    url_short = item['url']
+                    if len(url_short) > 50:
+                        url_short = url_short[:47] + "..."
+                    print(f"      {i}. {url_short}")
+                    print(f"          📅 {item['ts'][:8]} | {item['wayback'][:60]}...")
+        
+        if not found_any:
+            print("   😕 интересные пути не найдены")
+        
+        print(f"\n{'='*70}")
+        print(f"🕰 исторические изменения:")
+        
+        if analysis:
+            for item in analysis[:3]:
+                url_short = item['url']
+                if len(url_short) > 45:
+                    url_short = url_short[:42] + "..."
+                print(f"\n   🔄 {url_short}")
+                print(f"      📅 первый снимок: {item['первый']}")
+                print(f"      📅 последний снимок: {item['последний']}")
+                print(f"      🖼 всего снимков: {item['снимков']}")
+        else:
+            print("   📊 недостаточно данных для анализа изменений")
+        
+        print(f"\n{'='*70}")
+        print(f"🤖 robots.txt информация:")
+        
+        if robots:
+            for robot in robots[:2]:
+                print(f"\n   📄 найден robots.txt:")
+                if robot.get('disallow'):
+                    print(f"      🚫 запрещенные пути:")
+                    for path in robot['disallow'][:3]:
+                        print(f"         • {path}")
+                if robot.get('sitemaps'):
+                    print(f"      🗺 sitemaps:")
+                    for sitemap in robot['sitemaps'][:2]:
+                        print(f"         • {sitemap}")
+        else:
+            print("   🤷 robots.txt не найден")
+        
+        print(f"\n{'='*70}")
+        print(f"📄 пример содержимого снимка:")
+        
+        if sample_content:
+            print(f"\n   📌 заголовок: {sample_content.get('title', 'не найден')}")
+            
+            if sample_content.get('emails'):
+                print(f"   📧 найденные email:")
+                for email in sample_content['emails'][:3]:
+                    print(f"      • {email}")
+            
+            if sample_content.get('phones'):
+                print(f"   📞 найденные телефоны:")
+                for phone in sample_content['phones'][:2]:
+                    print(f"      • {phone}")
+            
+            if sample_content.get('forms', 0) > 0:
+                print(f"   📝 форм на странице: {sample_content['forms']}")
+            
+            if sample_content.get('comments'):
+                print(f"   💬 html комментарии:")
+                for comment in sample_content['comments'][:2]:
+                    print(f"      • {comment}")
+        else:
+            print("   😕 не удалось получить содержимое")
+        
+        print(f"\n{'='*70}")
+        print(f"💡 рекомендации:")
+        
+        recommendations = []
+        
+        if interesting and any(len(items) > 0 for items in interesting.values()):
+            recommendations.append("проверить найденные чувствительные пути на уязвимости")
+        
+        if analysis:
+            recommendations.append("сравнить разные версии страниц для поиска изменений")
+        
+        if robots and any(r.get('disallow') for r in robots):
+            recommendations.append("проверить запрещенные пути из robots.txt на доступность")
+        
+        if len(snapshots) > 20:
+            recommendations.append(f"изучить все {len(snapshots)} снимков для полного анализа")
+        
+        if recommendations:
+            for i, rec in enumerate(recommendations, 1):
+                print(f"   {i}. {rec}")
+        else:
+            print("   🤔 рекомендаций нет - данных слишком мало")
+        
+        print(f"\n{'='*70}")
+    
+    def run_and_print(self):
         print(f"\nначат сбор wayback для {self.domain}")
         print("подождите...")
         
         snapshots = self.get_cdx_data()
         
         if not snapshots:
-            return {"ошибка": "нет данных для домена"}
+            print(f"\n{'='*70}")
+            print(f"😕 ошибка: нет данных wayback для домена {self.domain}")
+            print(f"возможно домен не индексировался или заблокирован")
+            print(f"{'='*70}")
+            return
         
         interesting = self.find_interesting_urls(snapshots)
         
@@ -233,115 +347,32 @@ class wayback_scraper:
         
         analysis = self.analyze_snapshots(snapshots)
         
-        result = {
-            "домен": self.domain,
-            "всего_снимков": len(snapshots),
-            "интересные_пути": {},
-            "пример_контента": sample_content,
-            "роботы": robots,
-            "анализ": analysis,
-            "дата": datetime.now().isoformat()
-        }
-        
-        for cat, items in interesting.items():
-            if items:
-                result["интересные_пути"][cat] = []
-                for item in items[:3]:
-                    result["интересные_пути"][cat].append({
-                        "url": item["url"],
-                        "дата": item["ts"],
-                        "wayback": item["wayback"]
-                    })
-        
-        return result
+        self.print_results(snapshots, interesting, sample_content, robots, analysis)
 
-def format_wayback_result(result):
-    if "ошибка" in result:
-        print(f"\nошибка: {result['ошибка']}")
-        return
-    
-    domain = result.get("домен", "")
-    total = result.get("всего_снимков", 0)
-    
-    print(f"\n{'='*60}")
-    print(f"отчет wayback machine")
-    print(f"{'='*60}")
-    print(f"домен: {domain}")
-    print(f"снимков: {total}")
-    print(f"{'='*60}")
-    
-    interesting = result.get("интересные_пути", {})
-    
-    if interesting:
-        print(f"\nнайдены интересные пути:")
-        for cat, items in interesting.items():
-            if items:
-                print(f"\n{cat} ({len(items)}):")
-                for i, item in enumerate(items, 1):
-                    url_short = item['url'][:50] + "..." if len(item['url']) > 50 else item['url']
-                    print(f"  {i}. {url_short}")
-                    print(f"     📅 {item['дата'][:8]}")
-    
-    analysis = result.get("анализ", [])
-    if analysis:
-        print(f"\nисторические изменения:")
-        for item in analysis[:3]:
-            url_short = item['url'][:40] + "..." if len(item['url']) > 40 else item['url']
-            print(f"  {url_short}")
-            print(f"     с {item['первый']} по {item['последний']} ({item['снимков']} снимков)")
-    
-    robots = result.get("роботы", [])
-    if robots:
-        print(f"\nнайден robots.txt:")
-        for robot in robots:
-            if robot.get('disallow'):
-                print(f"  запрещено: {', '.join(robot['disallow'][:3])}")
-    
-    sample = result.get("пример_контента")
-    if sample:
-        print(f"\nпример содержимого:")
-        if sample.get("title"):
-            print(f"  заголовок: {sample['title']}")
-        if sample.get("emails"):
-            print(f"  emails: {', '.join(sample['emails'][:2])}")
-        if sample.get("forms") > 0:
-            print(f"  форм на странице: {sample['forms']}")
-    
-    print(f"\n{'='*60}")
-    print(f"что делать дальше:")
-    
-    if interesting:
-        print("1. проверить найденные чувствительные пути")
-    
-    if analysis:
-        print("2. сравнить разные версии страниц")
-    
-    if robots and any(r.get('disallow') for r in robots):
-        print("3. проверить запрещенные пути на доступность")
-    
-    if total > 0:
-        print(f"4. изучить {total} снимков полностью")
-    
-    print(f"{'='*60}")
-
-def run_wayback():
-    domain = input("введите домен для wayback -> ").strip().lower()
+def run_wayback_scraper():
+    domain = input("\nвведите домен для wayback machine -> ").strip().lower()
     
     if not domain or ' ' in domain:
-        print("неверный домен")
+        print("неверный формат домена")
         return
     
     scraper = wayback_scraper(domain)
-    result = scraper.run()
+    scraper.run_and_print()
     
-    format_wayback_result(result)
-    
-    save = input("\nсохранить отчет? (y/n) -> ").lower()
+    save = input("\nсохранить сырые данные? (y/n) -> ").lower()
     if save == 'y':
-        import json
-        filename = f"wayback_{domain}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-        with open(filename, 'w', encoding='utf-8') as f:
-            json.dump(result, f, indent=2, ensure_ascii=False)
-        print(f"сохранено в {filename}")
-    
-    print(result)
+        try:
+            import json
+            filename = f"wayback_{domain}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            
+            result_data = {
+                "domain": domain,
+                "snapshots_count": len(scraper.get_cdx_data()),
+                "timestamp": datetime.now().isoformat()
+            }
+            
+            with open(filename, 'w', encoding='utf-8') as f:
+                json.dump(result_data, f, indent=2, ensure_ascii=False)
+            print(f"данные сохранены в {filename}")
+        except:
+            print("ошибка при сохранении")

@@ -131,7 +131,7 @@ while True:
                 leaks.format_osint_report(leaks.run_advanced_osint())
                 input()
             elif osint_menu == 6:
-                waybackmachine.run_wayback()
+                waybackmachine.run_wayback_scraper()
                 input()
             elif osint_menu == 7:
                 continue
