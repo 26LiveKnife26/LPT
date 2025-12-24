@@ -5,7 +5,7 @@ import json
 import random
 import time
 import sys
-from tools.osint import whois_lookup, dns_enumeration, subdomain_bruteforce, port_scaner, banner_identifier, leaks
+from tools.osint import whois_lookup, dns_enumeration, subdomain_bruteforce, port_scaner, banner_identifier, leaks, waybackmachine
 
 with open('backend/cookies.json', 'r') as cookies:
     cookie = json.load(cookies)
@@ -55,7 +55,7 @@ while True:
         ).show()
         if modules_menu == 0:
             osint_menu = simple_term_menu.TerminalMenu(
-                ["whois lookup", "dns enumeration", "brute force(subdomain)", "port-scaner", "определение сервиса по баннеру", "сбор информации", "wayback-machine(скрейпер)"],
+                ["whois lookup", "dns enumeration", "brute force(subdomain)", "port-scaner", "определение сервиса по баннеру", "сбор информации", "wayback-machine(скрейпер)", "назад"],
                 menu_cursor="-> ",
                 menu_cursor_style=("fg_gray", "bold"),
                 clear_screen=False
@@ -128,7 +128,14 @@ while True:
                 
                 input()
             elif osint_menu == 5:
-                leaks.run_advanced_osint()
+                leaks.format_osint_report(leaks.run_advanced_osint())
+                input()
+            elif osint_menu == 6:
+                waybackmachine.run_wayback()
+                input()
+            elif osint_menu == 7:
+                continue
+                
     elif menu == 1:
         print("логи еще в разработке, иди нафиг")
         input("")
