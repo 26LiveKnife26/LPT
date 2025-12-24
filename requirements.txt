@@ -1,2 +1,5 @@
 simple_term_menu
 dnspython
+datetime
+bs4
+requests

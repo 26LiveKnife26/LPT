@@ -5,7 +5,7 @@ import json
 import random
 import time
 import sys
-from tools.osint import whois_lookup, dns_enumeration, subdomain_bruteforce
+from tools.osint import whois_lookup, dns_enumeration, subdomain_bruteforce, port_scaner, banner_identifier, leaks
 
 with open('backend/cookies.json', 'r') as cookies:
     cookie = json.load(cookies)
@@ -64,7 +64,10 @@ while True:
                 osint_domen_whois = input("домен сайта(без https://) -> ")
                 print(whois_lookup.whois_lookup(osint_domen_whois))
                 input("")
-            if osint_menu == 2:
+            elif osint_menu == 1:
+                osint_domen_dns = input("домен сайта(без https://) -> ")
+                dns_enumeration.print_dns_results(dns_enumeration.dns_enum(osint_domen_dns), osint_domen_dns)
+            elif osint_menu == 2:
                 osint_domen_brute = input("домен сайта(без https://) -> ")
                 try:
                     results = subdomain_bruteforce.run_bruteforce(osint_domen_brute)
@@ -89,9 +92,43 @@ while True:
                 except Exception as e:
                     print(f"ошибка: {e}")
                 input("")
-        if modules_menu == 4:
-            continue
-    
+            elif osint_menu == 3:
+                osint_domen_portscan = input("введите IP сайта или домен -> ")
+                osint_domen_portscan_ports = input("введите кол-во портов(1-1024) -> ")
+                osint_domen_portscan_banners = int(input("включить баннеры?(1- да, 2 - нет) -> "))
+                if osint_domen_portscan_banners == 1:
+                    osint_domen_portscan_banners_status = True
+                else:
+                    osint_domen_portscan_banners_status = False
+                results = port_scaner.run_scanner(osint_domen_portscan, osint_domen_portscan_ports, 1024, osint_domen_portscan_banners_status)
+
+                print(f"сканирование {results['target']}")
+                print(f"время: {results['scan_time']:.2f} сек")
+                print(f"портов: {results['total_ports']}")
+                print(f"открыто: {results['open_ports_count']}")
+
+                input()
+                for port_info in results["open_ports"]:
+                    print(f"{port_info['port']} - {port_info['service']}")
+                    if port_info['banner']:
+                        print(f"  баннер: {port_info['banner'][:50]}")
+                input()
+            elif osint_menu == 4:
+                results = banner_identifier.run_fast_banner_scan()
+                
+                save = input("\nсохранить результаты? (y/n) -> ").lower()
+                if save == 'y':
+                    import json
+                    from datetime import datetime
+                    
+                    filename = f"results/banner_scan_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+                    with open(filename, 'w', encoding='utf-8') as f:
+                        json.dump(results, f, indent=4, ensure_ascii=False)
+                    print(f"результаты сохранены в {filename}")
+                
+                input()
+            elif osint_menu == 5:
+                leaks.run_advanced_osint()
     elif menu == 1:
         print("логи еще в разработке, иди нафиг")
         input("")
