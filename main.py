@@ -6,6 +6,8 @@ import random
 import time
 import sys
 from tools.osint import whois_lookup, dns_enumeration, subdomain_bruteforce, port_scaner, banner_identifier, leaks, waybackmachine
+from tools.web import scraper, xss
+import asyncio
 
 with open('backend/cookies.json', 'r') as cookies:
     cookie = json.load(cookies)
@@ -13,16 +15,7 @@ with open('backend/cookies.json', 'r') as cookies:
 art.tprint("*   LPT   *")
 
 if cookie["user"]["first?"] == "yes":
-    print("вы впервые, не хотели ли бы вы прочитать инструкцию?")
-    choice_index = simple_term_menu.TerminalMenu(
-        ["да", "нет"],
-        menu_cursor="→ ",
-        clear_screen=False
-    ).show()
-    
-    if choice_index == 0:
-        print("инструкция:\n1.для использования модуля нажмите w или выберите пункт в меню\n2.если вы не знаете применение какому либо модулю нажмите h или выберите соответсвующий пункт в меню\n3.если вы нашли баг то обратитесь на почту liveknife26@gmail.com. либо откройте issue/discussion в github\nудачной работы!")
-        input("\nнажмите enter для продолжения...")
+    print("здравствуйте new user, добро пожаловать в LPT!")
         
     cookie["user"]["first?"] = "no"
     with open('backend/cookies.json', 'w') as cookies:
@@ -48,7 +41,7 @@ while True:
         print("модули 📦")
         print("")
         modules_menu = simple_term_menu.TerminalMenu(
-            ["osint", "веб-пентест", "крипто и сети", "эксплуатация", "назад"],
+            ["osint", "веб-пентест", "крипто и сети", "эксплуатация", "minecraft", "назад"],
             menu_cursor="-> ",
             menu_cursor_style=("fg_gray", "bold"),
             clear_screen=False
@@ -61,7 +54,7 @@ while True:
                 clear_screen=False
             ).show()
             if osint_menu == 0:
-                osint_domen_whois = input("домен сайта(без https://) -> ")
+                osint_domen_whois = input("домен сайта -> ")
                 print(whois_lookup.whois_lookup(osint_domen_whois))
                 input("")
             elif osint_menu == 1:
@@ -135,6 +128,17 @@ while True:
                 input()
             elif osint_menu == 7:
                 continue
+        elif modules_menu == 1:
+            web_menu = simple_term_menu.TerminalMenu(
+                ["crawler", "xss-сканер"],
+                menu_cursor="-> ",
+                menu_cursor_style=("fg_gray", "bold"),
+                clear_screen=False
+            ).show()
+            if web_menu == 0:
+                asyncio.run(scraper.run_spider())
+            elif web_menu == 1:
+                asyncio.run(xss.run_xss_scanner())
                 
     elif menu == 1:
         print("логи еще в разработке, иди нафиг")
@@ -145,7 +149,7 @@ while True:
         input("")
     
     elif menu == 3:
-        print("проваливай!")
+        print("закрываем лабораторию...")
         sys.exit()
     
     print("\033c\033[3J", end="")

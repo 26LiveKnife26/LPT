@@ -27,3 +27,4 @@ def whois_lookup(domain, whois_server="whois.iana.org", port=43):
         return result
     except Exception:
         return "Ошибка запроса"
+    
